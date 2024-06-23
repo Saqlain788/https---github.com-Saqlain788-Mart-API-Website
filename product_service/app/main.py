@@ -16,7 +16,7 @@ from app.consumer.product_consumer import consume_message
 from app.consumer.inventory_consumer import consume_inventory_message 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Creating table")
+    print("Creating table!!!!!!!")
     task = asyncio.create_task(consume_message
     (settings.KAFKA_PRODUCT_TOPIC,'broker:19092'))
     asyncio.create_task(consume_inventory_message
