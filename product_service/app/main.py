@@ -13,10 +13,13 @@ from app.producer import get_kafka_producer
 from typing import Annotated, AsyncGenerator
 from app import settings
 from app.consumer.product_consumer import consume_message
-from app.consumer.inventory_consumer import consume_inventory_message 
+from app.consumer.inventory_consumer import consume_inventory_message
+
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Creating table!!!!!!!")
+    print("Creating table........")
     task = asyncio.create_task(consume_message
     (settings.KAFKA_PRODUCT_TOPIC,'broker:19092'))
     asyncio.create_task(consume_inventory_message
@@ -25,26 +28,26 @@ async def lifespan(app: FastAPI):
     create_db_and_tables()
     yield
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, title="Product Service API", version="0.0.1")
 
 @app.get("/")
 def read_root():
-    return {"Hello": "Product Service1"}
+    return {"Hello": "Product Service"}
 
 @app.post("/products/", response_model=Product)
 async def create_new_product(product: Product, session: Annotated[Session, Depends(get_session)], producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
-    # product_dict = {field: getattr(product, field) for field in product.dict()}
-    # product_dict = {field: getattr(product, field) for field in product.dict()}
-    # product_json = json.dumps(product_dict).encode("utf-8")
-    # print("product_JSON:", product_json)
-    # await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, product_json)
+    product_dict = {field: getattr(product, field) for field in product.dict()}
+    product_dict = {field: getattr(product, field) for field in product.dict()}
+    product_json = json.dumps(product_dict).encode("utf-8")
+    print("product_JSON:", product_json)
+    await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, product_json)
     # Produce message
-    product_protobuf = product_pb2.Product(id=product.id, name=product.name, description=product.description, price=product.price, quantity=product.quantity, brand=product.brand, weight=product.weight, category=product.category)
-    print(f"Product Protobuf: {product_protobuf}")
-    # Serialize the message to a byte string
-    serialized_product = product_protobuf.SerializeToString()
-    print(f"Serialized data: {serialized_product}")
-    await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, serialized_product)
+    # product_protobuf = product_pb2.Product(id=product.id, name=product.name, description=product.description, price=product.price, quantity=product.quantity, brand=product.brand, weight=product.weight, category=product.category)
+    # print(f"Product Protobuf: {product_protobuf}")
+    # # Serialize the message to a byte string
+    # serialized_product = product_protobuf.SerializeToString()
+    # print(f"Serialized data: {serialized_product}")
+    # await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, serialized_product)
     return product
 
     # new_product = add_new_product(product, session)

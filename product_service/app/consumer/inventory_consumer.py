@@ -3,9 +3,8 @@ import json
 from app.db import get_session
 from app.crud.product_crud import add_new_product, validate_product_id
 from app.models.product_model import Product
-
-
 from app import product_pb2
+
 
 async def consume_inventory_message(topic, bootstrap_servers):
 # create a consumer instance
@@ -27,27 +26,27 @@ async def consume_inventory_message(topic, bootstrap_servers):
             print(f"\n\n Consumer Vaue: {msg.value}\n")
 
             # 1. Extract Poduct Id
-            # inventory_data = json.loads(msg.value.decode())
-            # product_id = inventory_data["product_id"]
-            # print("PRODUCT ID", product_id)
-
-            # # 2. Check if Product Id is Valid
-            # with next(get_session()) as session:
-            #     product = validate_product_id(
-            #         product_id=product_id, session=session)
-            #     print("PRODUCT VALIDATION CHECK", product)
-            
-            # Protobuf method 
-
-            inventory_data = product_pb2.Product()
-            inventory_data.ParseFromString(msg.value)
-            product_id = inventory_data.id
-            print(f"\n\n Consumer Deserialized data: {inventory_data}")
+            inventory_data = json.loads(msg.value.decode())
+            product_id = inventory_data["product_id"]
+            print("PRODUCT ID", product_id)
 
             # 2. Check if Product Id is Valid
             with next(get_session()) as session:
-                product = validate_product_id(product_id=product_id, session=session)
+                product = validate_product_id(
+                    product_id=product_id, session=session)
                 print("PRODUCT VALIDATION CHECK", product)
+            
+            # Protobuf method 
+
+            # inventory_data = product_pb2.Product()
+            # inventory_data.ParseFromString(msg.value)
+            # product_id = inventory_data.id
+            # print(f"\n\n Consumer Deserialized data: {inventory_data}")
+
+            # 2. Check if Product Id is Valid
+            # with next(get_session()) as session:
+            #     product = validate_product_id(product_id=product_id, session=session)
+            #     print("PRODUCT VALIDATION CHECK", product)
             # 3. if valid, 
                 #   write New topic    
                 if product is not None:

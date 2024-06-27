@@ -5,7 +5,7 @@ from aiokafka import AIOKafkaProducer
 import json
 import asyncio 
 from sqlmodel import SQLModel
-
+import json
 from typing import List
 from app.models.inventory_model import InventoryItem, UpdatedInventoryItem
 from app.db import get_session, engine
@@ -36,20 +36,20 @@ def read_root():
 
 @app.post("/manage-inventory/", response_model=InventoryItem)
 async def add_new_inventory(inventory: InventoryItem, session: Annotated[Session, Depends(get_session)], producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
-    # inventory_dict = {field: getattr(inventory, field) for field in inventory.dict()}
-    # inventory_json = json.dumps(inventory_dict).encode("utf-8")
-    # print("product_JSON:", inventory_json)
-    # # Produce message 
-    # await producer.send_and_wait("Add-Stocks", inventory_json)
-    # return inventory
-    # Through Protobuf
-    inventory_protobuf = inventory_pb2.InventoryItem(id=inventory.id, product_id=inventory.product_id, variant_id=inventory.variant_id, quantity=inventory.quantity, status=inventory.status)
-    print(f"Product Protobuf: {inventory_protobuf}")
-    # Serialize the message to a byte string
-    serialized_product = inventory_protobuf.SerializeToString()
-    print(f"Serialized data: {serialized_product}")
-    await producer.send_and_wait("AddStocks", serialized_product)
+    inventory_dict = {field: getattr(inventory, field) for field in inventory.dict()}
+    inventory_json = json.dumps(inventory_dict).encode("utf-8")
+    print("product_JSON:", inventory_json)
+    # Produce message 
+    await producer.send_and_wait("Add-Stocks", inventory_json)
     return inventory
+    # Through Protobuf
+    # inventory_protobuf = inventory_pb2.InventoryItem(id=inventory.id, product_id=inventory.product_id, variant_id=inventory.variant_id, quantity=inventory.quantity, status=inventory.status)
+    # print(f"Product Protobuf: {inventory_protobuf}")
+    # # Serialize the message to a byte string
+    # serialized_product = inventory_protobuf.SerializeToString()
+    # print(f"Serialized data: {serialized_product}")
+    # await producer.send_and_wait("AddStocks", serialized_product)
+    # return inventory
 
     # new_product = add_new_product(product, session)
     # return new_product

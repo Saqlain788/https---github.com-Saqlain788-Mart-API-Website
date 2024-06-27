@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package order;
+
+message OrderItem {
+    int32 order_id = 1;
+    int32 product_id = 2;
+    int32 quantity = 3;
+    float price = 4;
+}
+
+message Order {
+    int32 id = 1;
+    int32 user_id = 2;
+    float total_price = 3;
+    string status = 4;
+    string created_at = 5;
+    string updated_at = 6;
+    repeated OrderItem items = 7;
+}
+
+message OrderList {
+    repeated Order orders = 1;
+}

@@ -11,7 +11,7 @@ services:
       - postgres_product_db
       - broker
     ports:
-      - "8004:8000" # Expose container port 8000 to host port 8000
+      - "8000:8000" # Expose container port 8000 to host port 8000
   inventory_service:
     build:
       context: ./inventory_service
@@ -22,33 +22,67 @@ services:
       - postgres_inventory_db
       - broker
     ports:
-      - "8006:8000" # Expose container port 8000 to host port 8000
-  api:
+      - "8001:8000" # Expose container port 8000 to host port 8000
+  payment_service:
     build:
-      context: ./todo
+      context: ./payment_service
       dockerfile: Dockerfile.dev
     volumes:
-      - ./todo:/code # Sync local development directory with the container
+      - ./payment_service:/code # Sync local development directory with the container
     depends_on:
-      - postgres_db
+      - postgres_payment_db
       - broker
     ports:
-      - "8000:8000" # Expose container port 8000 to host port 8000
-  api2:
+      - "8003:8000" # Expose container port 8000 to host port 8000
+  order_service:
     build:
-      context: ./microservice_02
-      dockerfile: Dockerfile.dev
+      context: ./order_service
+      dockerfile: Dockerfile.dev  
     volumes:
-      - ./microservice_02:/code # Sync local development directory with the container
+      - ./order_service:/code # Sync local development directory with the container
     depends_on:
-      - postgres_db
+      - postgres_order_db
       - broker
     ports:
       - "8002:8000" # Expose container port 8000 to host port 8000
-  postgres_db:
+  notification_service:
+    build:
+      context: ./notification_service
+      dockerfile: Dockerfile.dev  
+    volumes:
+        - ./notification_service:/code # Sync local development directory with the container
+    depends_on:
+      - postgres_notification_db
+      - broker
+    ports:
+      - "8004:8000" # Expose container port 8000 to host port 8000
+  user_service:
+    build:
+      context: ./user_service
+      dockerfile: Dockerfile.dev  
+    volumes:
+        - ./user_service:/code # Sync local development directory with the container
+    depends_on:
+      - postgress_user_db
+      - broker
+    ports:
+      - "8005:8000" # Expose container port 8000 to host port 8000
+  postgres_notification_db:
     image: postgres:latest # Use the official PostgreSQL image
     restart: always
-    container_name: PostgresCont
+    container_name: PostgresnotificationCont
+    environment:
+      - POSTGRES_USER=ziakhan
+      - POSTGRES_PASSWORD=my_password
+      - POSTGRES_DB=notification_DB
+    ports:
+      - "5438:5432"
+    volumes:
+      - postgres_notification_db:/var/lib/postgresql/data
+  postgres_order_db:
+    image: postgres:latest # Use the official PostgreSQL image
+    restart: always
+    container_name: PostgresorderCont
     environment:
       - POSTGRES_USER=ziakhan
       - POSTGRES_PASSWORD=my_password
@@ -56,7 +90,31 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres_db:/var/lib/postgresql/data
+      - postgres_order_db:/var/lib/postgresql/data
+  postgress_user_db:
+    image: postgres:latest # Use the official PostgreSQL image
+    restart: always
+    container_name: PostgresuserCont
+    environment:
+      - POSTGRES_USER=ziakhan
+      - POSTGRES_PASSWORD=my_password
+      - POSTGRES_DB=userDB
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgress_user_db:/var/lib/postgresql/data 
+  postgres_payment_db:
+    image: postgres:latest # Use the official PostgreSQL image
+    restart: always
+    container_name: PostgrespaymentCont
+    environment:
+      - POSTGRES_USER=ziakhan
+      - POSTGRES_PASSWORD=my_password
+      - POSTGRES_DB=payment_DB
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_payment_db:/var/lib/postgresql/data
   postgres_product_db:
     image: postgres:latest # Use the official PostgreSQL image
     restart: always
@@ -66,7 +124,7 @@ services:
       - POSTGRES_PASSWORD=my_password
       - POSTGRES_DB=product_DB
     ports:
-      - "5434:5432"
+      - "5432:5432"
     volumes:
       - postgres_product_db:/var/lib/postgresql/data
   postgres_inventory_db:
@@ -120,6 +178,14 @@ volumes:
   postgres_product_db:
     driver: local
   postgres_inventory_db:
+    driver: local
+  postgres_order_db:
+    driver: local
+  postgres_payment_db:
+    driver: local
+  postgres_notification_db:
+    driver: local
+  postgress_user_db:
     driver: local
 networks:
   default:
