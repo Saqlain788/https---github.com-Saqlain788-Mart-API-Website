@@ -3,7 +3,7 @@ import json
 from app.db import get_session
 from app.crud.product_crud import add_new_product, validate_product_id
 from app.models.product_model import Product
-from app import product_pb2
+# from app import product_pb2
 
 
 async def consume_inventory_message(topic, bootstrap_servers):
@@ -36,36 +36,38 @@ async def consume_inventory_message(topic, bootstrap_servers):
                     product_id=product_id, session=session)
                 print("PRODUCT VALIDATION CHECK", product)
             
-            # Protobuf method 
+#             # Protobuf method 
 
-            # inventory_data = product_pb2.Product()
-            # inventory_data.ParseFromString(msg.value)
-            # product_id = inventory_data.id
-            # print(f"\n\n Consumer Deserialized data: {inventory_data}")
+#             # inventory_data = product_pb2.Product()
+#             # inventory_data.ParseFromString(msg.value)
+#             # product_id = inventory_data.id
+#             # print(f"\n\n Consumer Deserialized data: {inventory_data}")
 
-            # 2. Check if Product Id is Valid
-            # with next(get_session()) as session:
-            #     product = validate_product_id(product_id=product_id, session=session)
-            #     print("PRODUCT VALIDATION CHECK", product)
+#             # 2. Check if Product Id is Valid
+#             # with next(get_session()) as session:
+#             #     product = validate_product_id(product_id=product_id, session=session)
+#             #     print("PRODUCT VALIDATION CHECK", product)
             # 3. if valid, 
                 #   write New topic    
+                if product is None:
+                    pass
                 if product is not None:
-                    print("Product Validation check passed")
+                        # - Write New Topic
+                    print("PRODUCT VERIFIED", product)
+                    
                     producer = AIOKafkaProducer(
-                        bootstrap_servers='broker:19092',
-                    )
-                    print("Producer test")
+                        bootstrap_servers='broker:19092')
                     await producer.start()
-                    print("producer started")
                     try:
-                        print("Sending message to topic: new-inventory-topic")
                         await producer.send_and_wait(
-                            topic="inventory-add-stock-response",
-                            value=inventory_data.SerializeToString(),
+                            "inventory-add-stock-response",
+                            msg.value
                         )
                     finally:
                         await producer.stop()
-        
+
+            # Here you can add code to process each message.
+            # Example: parse the message, store it in a database, etc.
     finally:
         # Ensure to close the consumer when done.
         await consumer.stop()

@@ -23,7 +23,7 @@ def create_db_and_tables() -> None:
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     print("Creating table.....")
 
-    task = asyncio.create_task(consume_message("AddStocks",'broker:19092'))
+    task = asyncio.create_task(consume_message("inventory-add-stock-response",'broker:19092'))
     
     create_db_and_tables()
     yield
@@ -40,7 +40,7 @@ async def add_new_inventory(inventory: InventoryItem, session: Annotated[Session
     inventory_json = json.dumps(inventory_dict).encode("utf-8")
     print("product_JSON:", inventory_json)
     # Produce message 
-    await producer.send_and_wait("Add-Stocks", inventory_json)
+    await producer.send_and_wait("AddStocks", inventory_json)
     return inventory
     # Through Protobuf
     # inventory_protobuf = inventory_pb2.InventoryItem(id=inventory.id, product_id=inventory.product_id, variant_id=inventory.variant_id, quantity=inventory.quantity, status=inventory.status)
