@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlmodel import Session
 from aiokafka import AIOKafkaProducer 
-import json
+# import json
 import asyncio 
-# from app import product_pb2
+from app import product_pb2
 
 from app.models.product_model import Product, updatedproduct
 from app.db import get_session, engine, create_db_and_tables
@@ -19,7 +19,7 @@ from app.consumer.inventory_consumer import consume_inventory_message
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Creating table...")
+    print("Creating table...........")
     task = asyncio.create_task(consume_message
     ("ProductCreated",'broker:19092'))
     asyncio.create_task(consume_inventory_message
@@ -36,19 +36,20 @@ def read_root():
 
 @app.post("/products/", response_model=Product)
 async def create_new_product(product: Product, session: Annotated[Session, Depends(get_session)], producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
-    product_dict = {field: getattr(product, field) for field in product.dict()}
-    product_json = json.dumps(product_dict).encode("utf-8")
-    print("product_JSON:", product_json)
-    await producer.send_and_wait("ProductCreated", product_json)
-    return product
-    # Produce message
-    # product_protobuf = product_pb2.Product(id=product.id, name=product.name, description=product.description, price=product.price, quantity=product.quantity, brand=product.brand, weight=product.weight, category=product.category)
-    # print(f"Product Protobuf: {product_protobuf}")
-    # # Serialize the message to a byte string
-    # serialized_product = product_protobuf.SerializeToString()
-    # print(f"Serialized data: {serialized_product}")
-    # await producer.send_and_wait(settings.KAFKA_PRODUCT_TOPIC, serialized_product)
+    # product_dict = {field: getattr(product, field) for field in product.dict()}
+    # product_json = json.dumps(product_dict).encode("utf-8")
+    # print("product_JSON:", product_json)
+    # await producer.send_and_wait("ProductCreated", product_json)
     # return product
+    
+    # Produce message
+    product_protobuf = product_pb2.Product(id=product.id, name=product.name, description=product.description, price=product.price, quantity=product.quantity, brand=product.brand, weight=product.weight, category=product.category)
+    print(f"Product Protobuf: {product_protobuf}")
+    # Serialize the message to a byte string
+    serialized_product = product_protobuf.SerializeToString()
+    print(f"Serialized data: {serialized_product}")
+    await producer.send_and_wait("ProductCreated", serialized_product)
+    return product
 
     
 @app.get("/products/all", response_model=list[Product])

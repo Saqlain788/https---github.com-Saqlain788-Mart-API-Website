@@ -43,3 +43,7 @@ def update_order_by_id(order_id: int, to_update_order_data: UpdatedOrder, sessio
     session.add(order)
     session.commit()
     return order
+
+def validate_order_id(order_id:int, session:Session) -> Order | None:
+    order = session.exec(select(Order).where(Order.id == order_id)).one_or_none()   
+    return order

@@ -41,3 +41,7 @@ def update_inventory_item_by_id(inventory_item_id:int, to_update_inventory_data:
     session.commit()
     session.refresh(inventory_item)
     return inventory_item
+
+def validate_inventory_id(inventory_id:int, session:Session) -> InventoryItem | None:
+    inventory_item = session.exec(select(InventoryItem).where(InventoryItem.id == inventory_id)).one_or_none()   
+    return inventory_item

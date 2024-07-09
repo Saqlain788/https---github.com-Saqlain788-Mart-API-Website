@@ -16,6 +16,7 @@ from typing import Annotated, AsyncGenerator
 from app import settings
 from app.consumer.add_consumer_stock import consume_message 
 from app import inventory_pb2
+from app.consumer.add_consumer_order import consume_order_message
 
 def create_db_and_tables() -> None:
     SQLModel.metadata.create_all(engine)
@@ -24,7 +25,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     print("Creating table.....")
 
     task = asyncio.create_task(consume_message("inventory-add-stock-response",'broker:19092'))
-    
+    asyncio.create_task(consume_order_message("Ordertopic", 'broker:19092'))
     create_db_and_tables()
     yield
 
@@ -36,20 +37,20 @@ def read_root():
 
 @app.post("/manage-inventory/", response_model=InventoryItem)
 async def add_new_inventory(inventory: InventoryItem, session: Annotated[Session, Depends(get_session)], producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
-    inventory_dict = {field: getattr(inventory, field) for field in inventory.dict()}
-    inventory_json = json.dumps(inventory_dict).encode("utf-8")
-    print("product_JSON:", inventory_json)
-    # Produce message 
-    await producer.send_and_wait("AddStocks", inventory_json)
-    return inventory
-    # Through Protobuf
-    # inventory_protobuf = inventory_pb2.InventoryItem(id=inventory.id, product_id=inventory.product_id, variant_id=inventory.variant_id, quantity=inventory.quantity, status=inventory.status)
-    # print(f"Product Protobuf: {inventory_protobuf}")
-    # # Serialize the message to a byte string
-    # serialized_product = inventory_protobuf.SerializeToString()
-    # print(f"Serialized data: {serialized_product}")
-    # await producer.send_and_wait("AddStocks", serialized_product)
+    # inventory_dict = {field: getattr(inventory, field) for field in inventory.dict()}
+    # inventory_json = json.dumps(inventory_dict).encode("utf-8")
+    # print("product_JSON:", inventory_json)
+    # # Produce message 
+    # await producer.send_and_wait("AddStocks", inventory_json)
     # return inventory
+    # Through Protobuf
+    inventory_protobuf = inventory_pb2.InventoryItem(id=inventory.id, product_id=inventory.product_id, variant_id=inventory.variant_id, quantity=inventory.quantity, status=inventory.status)
+    print(f"Product Protobuf: {inventory_protobuf}")
+    # Serialize the message to a byte string
+    serialized_product = inventory_protobuf.SerializeToString()
+    print(f"Serialized data: {serialized_product}")
+    await producer.send_and_wait("AddStocks", serialized_product)
+    return inventory
 
     # new_product = add_new_product(product, session)
     # return new_product

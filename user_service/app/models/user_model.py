@@ -8,10 +8,12 @@ class User(SQLModel, table=True):
     name: str
     email: str
     password: str
+    order_id : int
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
 
 class UserCreate(SQLModel):
+    order_id : int
     name: str
     email: str
     password: str
