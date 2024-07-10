@@ -17,7 +17,7 @@ from app.consumer.user_consumer import consume_user_message
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Creating tables....................")
+    print("Creating tables..........")
     
     # Start the Kafka consumer for Order Service
     task = asyncio.create_task(consume_message("orderchecking", 'broker:19092'))

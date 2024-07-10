@@ -1,13 +1,25 @@
 syntax = "proto3";
 
-message Product {
-  int32 id = 1;
-  string name = 2;
-  string description = 3;
-  float price = 4;
-  int32 quantity = 5;       
-  string brand = 6;
-  float weight = 7;
-  string category = 8;
+message Payment {
+    int32 id = 1;
+    int32 user_id = 2;
+    int32 order_id = 3;
+    float amount = 4;
+    string status = 5;
+    string created_at = 6;
+    string updated_at = 7;
+}
 
+message PaymentCreate {
+    int32 user_id = 1;
+    int32 order_id = 2;
+    float amount = 3;
+    string status = 4;
+}
+
+message PaymentUpdate {
+    int32 user_id = 1;
+    int32 order_id = 2;
+    float amount = 3;
+    string status = 4;
 }

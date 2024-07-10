@@ -12,7 +12,7 @@ def add_new_order(order: Order, session: Session):
 # Get all orders from the database
 def get_all_orders(session: Session):
     all_orders = session.exec(select(Order)).all()
-    # print("get_all_orders: Retrieved orders:", all_orders)  # Debugging line
+    print("get_all_orders: Retrieved orders:", all_orders)  # Debugging line
     return all_orders
 
 # Get an order by ID

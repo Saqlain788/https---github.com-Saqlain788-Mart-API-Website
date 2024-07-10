@@ -8,15 +8,17 @@ async def consume_payment_message(topic, bootstrap_servers):
     consumer = AIOKafkaConsumer(
         topic,
         bootstrap_servers=bootstrap_servers,
-        group_id="payment-service-consumer-group"
+        group_id="PaymentGroup"
     )
     await consumer.start()
     try:
         async for msg in consumer:
-            payment_data = json.loads(msg.value.decode())
-            print(f"Received payment processed event: {payment_data}")
-            payment = Payment(**payment_data)
-            with next(get_session()) as session:
-                create_payment(payment, session)
+            # payment_data = json.loads(msg.value.decode())
+            # print(f"Received payment processed event: {payment_data}")
+            # payment = Payment(**payment_data)
+            # with next(get_session()) as session:
+            #     create_payment(payment, session)
+            # through protobuf
+
     finally:
         await consumer.stop()

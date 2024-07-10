@@ -21,7 +21,7 @@ def create_db_and_tables() -> None:
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     print("Creating tables...")
     
-    task = asyncio.create_task(consume_payment_message("PaymentProcessed", "broker:19092"))
+    task = asyncio.create_task(consume_payment_message("orderplaced", "broker:19092"))
     create_db_and_tables()
     try:
         yield
