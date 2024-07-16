@@ -12,7 +12,7 @@ from app.db import get_session, engine
 from app.crud.notification_crud import create_notification, get_notification_by_id, update_notification_by_id, delete_notification_by_id
 from app.consumer.notification_consumer import consume_message
 from app.producer import get_kafka_producer
-
+from app import notification_pb2
 def create_db_and_tables() -> None:
     SQLModel.metadata.create_all(engine)
 
@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     print("Creating tables...")
     create_db_and_tables()
 
-    task = asyncio.create_task(consume_message("NotificationCreated", "broker:19092"))
+    task = asyncio.create_task(consume_message("PaymentReceived", "broker:19092"))
     try:
         yield
     finally:
@@ -33,11 +33,16 @@ app = FastAPI(lifespan=lifespan, title="Notification Service API", version="0.0.
 @app.post("/notifications/", response_model=Notification)
 async def get_notification(notification: NotificationCreate, session: Annotated[Session, Depends(get_session)], producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
     # db_notification = create_notification(notification, session)
-    notification_dict = {field: getattr(notification, field) for field in notification.dict()}
-    notification_json = json.dumps(notification_dict).encode("utf-8")
-    await producer.send_and_wait("NotificationCreated", notification_json)
+    # notification_dict = {field: getattr(notification, field) for field in notification.dict()}
+    # notification_json = json.dumps(notification_dict).encode("utf-8")
+    # await producer.send_and_wait("NotificationCreated", notification_json)
+    # return notification
+    # through protobuf
+    notification_protobuf = notification_pb2.NotificationCreate(user_id = notification.user_id, message = notification.message, status = notification.status)
+    print(f"Notification: {notification_protobuf}")
+    serialized_notification = notification_protobuf.SerializeToString()
+    await producer.send_and_wait("NotificationSent", serialized_notification)
     return notification
-
 @app.get("/notifications/{notification_id}", response_model=Notification)
 def read_notification(notification_id: int, session: Annotated[Session, Depends(get_session)]):
     db_notification = get_notification_by_id(notification_id, session)

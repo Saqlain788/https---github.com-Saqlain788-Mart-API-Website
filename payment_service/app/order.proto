@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package order;
+
+// The Order message
+message Order {
+  int32 id = 1;              // Optional id field
+  int32 inventory_id = 2;    // ID of the inventory item
+  int32 quantity = 3;        // Quantity of items ordered
+  float total_price = 4;     // Total price of the order
+  string status = 5;         // Status of the order
+}

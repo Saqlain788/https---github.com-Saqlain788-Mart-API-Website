@@ -37,3 +37,7 @@ def delete_payment_by_id(payment_id: int, session: Session):
     session.delete(payment)
     session.commit()
     return {'message': "Payment deleted successfully"}
+
+def validate_payment_id(payment_id:int, session:Session) -> Payment | None:
+    payment = session.exec(select(Payment).where(Payment.id == payment_id)).one_or_none()    
+    return payment

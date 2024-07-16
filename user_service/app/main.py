@@ -13,6 +13,7 @@ from app.models.user_model import User, UserUpdate, UserCreate
 from app.db import get_session, engine
 from app.crud.user_crud import  get_user_by_id, update_user_by_id, delete_user_by_id, get_all_users
 from app.consumer.user_add_consumer import consume_message
+from app.consumer.notification_consumer import consume_notification_message
 from app.producer import get_kafka_producer
 
 def create_db_and_tables() -> None:
@@ -23,6 +24,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     print("Creating tables...")
 
     task = asyncio.create_task(consume_message("orderplaced", "broker:19092"))
+    asyncio.create_task(consume_notification_message("NotificationSent", "broker:19092"))
     create_db_and_tables()
     try:
         yield

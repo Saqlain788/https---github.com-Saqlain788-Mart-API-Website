@@ -6,11 +6,11 @@ from app.db import get_session
 from app.crud.user_crud import create_user
 from app.models.user_model import UserCreate
 
-async def consume_message(topic, bootstrap_servers):
+async def consume_notification_message(topic, bootstrap_servers):
     consumer = AIOKafkaConsumer(
         topic, 
         bootstrap_servers=bootstrap_servers,
-        group_id="Orderresponsegroup"
+        group_id="NotificationUserGroup"
     )
     await consumer.start()
     try:
